@@ -57,12 +57,12 @@ func (h *Handler) HandleList() {
 	}
 
 	fmt.Printf("Found %d bank(s):\n", len(banks))
-	fmt.Println("ID\tName\t\t\tCustomers")
-	fmt.Println("--\t----\t\t\t---------")
+	fmt.Println("ID\tName")
+	fmt.Println("--\t---------")
 
 	for _, bank := range banks {
-		customerCount := len(bank.Customers)
-		fmt.Printf("%d\t%s\t\t\t%d\n", bank.ID, bank.Name, customerCount)
+		// customerCount := len(bank.Customers)
+		fmt.Printf("%d\t%s\n", bank.ID, bank.Name)
 	}
 }
 
@@ -102,19 +102,19 @@ func (h *Handler) HandleDelete(idStr string) {
 }
 
 // ShowHelp displays available commands
-func (h *Handler) ShowHelp() {
-	fmt.Println("Bank Management Commands:")
-	fmt.Println("  create <name>            - Create a new bank")
-	fmt.Println("  get <id>                 - Get bank by ID")
-	fmt.Println("  list                     - List all banks")
-	fmt.Println("  update <id> <name>       - Update bank")
-	fmt.Println("  delete <id>              - Delete bank")
-	fmt.Println("  add-customer <bank_id> <customer_id> - Add customer to bank")
-	fmt.Println("  remove-customer <bank_id> <customer_id> - Remove customer from bank")
-	fmt.Println("  get-customers <bank_id>  - List customers for a bank")
-	fmt.Println("  help                     - Show this help")
-	fmt.Println("  exit                     - Exit the application")
-}
+// func (h *Handler) ShowHelp() {
+// 	fmt.Println("Bank Management Commands:")
+// 	fmt.Println("  create <name>            - Create a new bank")
+// 	fmt.Println("  get <id>                 - Get bank by ID")
+// 	fmt.Println("  list                     - List all banks")
+// 	fmt.Println("  update <id> <name>       - Update bank")
+// 	fmt.Println("  delete <id>              - Delete bank")
+// 	fmt.Println("  add-customer <bank_id> <customer_id> - Add customer to bank")
+// 	fmt.Println("  remove-customer <bank_id> <customer_id> - Remove customer from bank")
+// 	fmt.Println("  get-customers <bank_id>  - List customers for a bank")
+// 	fmt.Println("  help                     - Show this help")
+// 	fmt.Println("  exit                     - Exit the application")
+// }
 
 // HandleAddCustomer processes adding a customer to a bank
 func (h *Handler) HandleAddCustomer(bankIDStr, customerIDStr string) {
