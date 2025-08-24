@@ -57,12 +57,12 @@ func (h *Handler) HandleList() {
 	}
 
 	fmt.Printf("Found %d bank(s):\n", len(banks))
-	fmt.Println("ID\tName\t\tCustomers")
-	fmt.Println("--\t----\t\t---------")
+	fmt.Println("ID\tName\t\t\tCustomers")
+	fmt.Println("--\t----\t\t\t---------")
 
 	for _, bank := range banks {
 		customerCount := len(bank.Customers)
-		fmt.Printf("%d\t%s\t\t%d\n", bank.ID, bank.Name, customerCount)
+		fmt.Printf("%d\t%s\t\t\t%d\n", bank.ID, bank.Name, customerCount)
 	}
 }
 
