@@ -23,13 +23,19 @@ func (s *Service) CreateBank(name string) (*Bank, error) {
 	if err := s.validateBankInput(name); err != nil {
 		return nil, err
 	}
-	
+
+	// Check if bank already exists
+	bank, err := s.repo.GetByName(name)
+	if err == nil {
+		return nil, fmt.Errorf("%s already exists", bank.Name)
+	}
+
 	// Create bank through repository
-	bank, err := s.repo.Create(name)
+	bank, err = s.repo.Create(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create bank: %w", err)
 	}
-	
+
 	return bank, nil
 }
 
@@ -38,12 +44,12 @@ func (s *Service) GetBank(id int64) (*Bank, error) {
 	if id <= 0 {
 		return nil, fmt.Errorf("invalid bank ID: %d", id)
 	}
-	
+
 	bank, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bank: %w", err)
 	}
-	
+
 	return bank, nil
 }
 
@@ -57,18 +63,18 @@ func (s *Service) UpdateBank(id int64, name string) (*Bank, error) {
 	if id <= 0 {
 		return nil, fmt.Errorf("invalid bank ID: %d", id)
 	}
-	
+
 	// Validate input
 	if err := s.validateBankInput(name); err != nil {
 		return nil, err
 	}
-	
+
 	// Update bank through repository
 	bank, err := s.repo.Update(id, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update bank: %w", err)
 	}
-	
+
 	return bank, nil
 }
 
@@ -77,12 +83,12 @@ func (s *Service) DeleteBank(id int64) error {
 	if id <= 0 {
 		return fmt.Errorf("invalid bank ID: %d", id)
 	}
-	
+
 	err := s.repo.Delete(id)
 	if err != nil {
 		return fmt.Errorf("failed to delete bank: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -98,7 +104,7 @@ func (s *Service) validateBankInput(name string) error {
 	if len(name) > 50 {
 		return fmt.Errorf("bank name cannot exceed 50 characters")
 	}
-	
+
 	return nil
 }
 
@@ -110,12 +116,12 @@ func (s *Service) AddCustomer(bankID, customerID int64) error {
 	if customerID <= 0 {
 		return fmt.Errorf("invalid customer ID: %d", customerID)
 	}
-	
+
 	err := s.repo.AddCustomer(bankID, customerID)
 	if err != nil {
 		return fmt.Errorf("failed to add customer to bank: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -127,12 +133,12 @@ func (s *Service) RemoveCustomer(bankID, customerID int64) error {
 	if customerID <= 0 {
 		return fmt.Errorf("invalid customer ID: %d", customerID)
 	}
-	
+
 	err := s.repo.RemoveCustomer(bankID, customerID)
 	if err != nil {
 		return fmt.Errorf("failed to remove customer from bank: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -141,11 +147,11 @@ func (s *Service) GetCustomers(bankID int64) ([]int64, error) {
 	if bankID <= 0 {
 		return nil, fmt.Errorf("invalid bank ID: %d", bankID)
 	}
-	
+
 	customers, err := s.repo.GetCustomers(bankID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get bank customers: %w", err)
 	}
-	
+
 	return customers, nil
 }
