@@ -20,7 +20,7 @@ func NewService(repo *Repository) *Service {
 // CreateBank creates a new bank with validation
 func (s *Service) CreateBank(username, password, name string) (*Bank, error) {
 	// Validate input
-	if err := s.validateBankInput(name); err != nil {
+	if err := s.validateBankInput(username, password, name); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +65,7 @@ func (s *Service) UpdateBank(id int64, username, password, name string) (*Bank, 
 	}
 
 	// Validate input
-	if err := s.validateBankInput(name); err != nil {
+	if err := s.validateBankInput(username, password, name); err != nil {
 		return nil, err
 	}
 
@@ -93,16 +93,16 @@ func (s *Service) DeleteBank(id int64) error {
 }
 
 // validateBankInput validates bank name
-func (s *Service) validateBankInput(name string) error {
+func (s *Service) validateBankInput(username, password, name string) error {
 	// Validate name
-	if strings.TrimSpace(name) == "" {
-		return fmt.Errorf("bank name cannot be empty")
+	if strings.TrimSpace(username) == "" || strings.TrimSpace(password) == "" || strings.TrimSpace(name) == "" {
+		return fmt.Errorf("input cannot be empty")
 	}
-	if len(name) < 2 {
-		return fmt.Errorf("bank name must be at least 2 characters long")
+	if len(username) < 2 || len(password) < 2 || len(name) < 2 {
+		return fmt.Errorf("input must be at least 2 characters long")
 	}
-	if len(name) > 50 {
-		return fmt.Errorf("bank name cannot exceed 50 characters")
+	if len(username) > 20 || len(password) > 20 || len(name) > 20 {
+		return fmt.Errorf("input cannot exceed 20 characters")
 	}
 
 	return nil

@@ -3,9 +3,9 @@ package bank
 // Bank represents a simple banking institution
 type Bank struct {
 	ID        int64   `json:"id"`
-	Username  string  `json:"username"`
-	Password  string  `json:"password"`
-	Name      string  `json:"name"`
+	Username  string  `json:"username,omitempty"`
+	Password  string  `json:"password,omitempty"`
+	Name      string  `json:"name,omitempty"`
 	Customers []int64 `json:"customers,omitempty"` // Store customer IDs instead of full objects
 }
 

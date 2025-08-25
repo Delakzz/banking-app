@@ -7,6 +7,17 @@ import (
 	"os"
 )
 
+// func showUpdateMenu() {
+// 	fmt.Println("What would you like to update?")
+// 	fmt.Println("==========================")
+// 	fmt.Println()
+// 	fmt.Println("1. Username")
+// 	fmt.Println("2. Password")
+// 	fmt.Println("3. Name")
+// 	fmt.Println()
+// 	fmt.Println("==========================")
+// }
+
 func showMenu() {
 	fmt.Println("Welcome to Banking App!")
 	fmt.Println("==========================")
@@ -41,19 +52,34 @@ func main() {
 			fmt.Println("Exiting the application. Goodbye!")
 			return
 		case "1":
+			fmt.Print("Enter bank username: ")
+			scanner.Scan()
+			bankUsername := scanner.Text()
+			fmt.Print("Enter bank password: ")
+			scanner.Scan()
+			bankPassword := scanner.Text()
 			fmt.Print("Enter bank name: ")
 			scanner.Scan()
 			bankName := scanner.Text()
-			bankHandler.HandleCreate(bankName)
+			bankHandler.HandleCreate(bankUsername, bankPassword, bankName)
 		case "2":
 			bankHandler.HandleList()
 			fmt.Print("\nEnter Bank ID to update: ")
 			scanner.Scan()
 			bankID := scanner.Text()
-			fmt.Print("Enter new Bank name: ")
+			fmt.Println("Just hit enter if you do not wish to update that variable.")
+			fmt.Print("Enter new username: ")
 			scanner.Scan()
-			newBankName := scanner.Text()
-			bankHandler.HandleUpdate(bankID, newBankName)
+			newUsername := scanner.Text()
+			fmt.Print("Enter new password: ")
+			scanner.Scan()
+			newPassword := scanner.Text()
+			fmt.Print("Enter new name: ")
+			scanner.Scan()
+			newName := scanner.Text()
+
+			bankHandler.HandleUpdate(bankID, newUsername, newPassword, newName)
+
 		case "3":
 			bankHandler.HandleList()
 			fmt.Print("\nEnter Bank ID to delete: ")

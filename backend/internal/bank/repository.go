@@ -150,9 +150,9 @@ func (r *Repository) Update(id int64, username, password, name string) (*Bank, e
 	// Find and update bank
 	for _, bank := range r.banks {
 		if bank.ID == id {
-			bank.Name = name
 			bank.Username = username
 			bank.Password = password
+			bank.Name = name
 
 			// Save updated data
 			if err := r.saveData(); err != nil {
