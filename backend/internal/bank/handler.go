@@ -18,8 +18,8 @@ func NewHandler(service *Service) *Handler {
 }
 
 // HandleCreate processes bank creation from CLI input
-func (h *Handler) HandleCreate(name string) {
-	bank, err := h.service.CreateBank(name)
+func (h *Handler) HandleCreate(username, password, name string) {
+	bank, err := h.service.CreateBank(username, password, name)
 	if err != nil {
 		fmt.Printf("Error creating bank: %v\n", err)
 		return
@@ -67,14 +67,14 @@ func (h *Handler) HandleList() {
 }
 
 // HandleUpdate processes bank updates from CLI input
-func (h *Handler) HandleUpdate(idStr, name string) {
+func (h *Handler) HandleUpdate(idStr, username, password, name string) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		fmt.Printf("Invalid ID format: %s\n", idStr)
 		return
 	}
 
-	bank, err := h.service.UpdateBank(id, name)
+	bank, err := h.service.UpdateBank(id, username, password, name)
 	if err != nil {
 		fmt.Printf("Error updating bank: %v\n", err)
 		return

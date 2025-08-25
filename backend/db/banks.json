@@ -1,26 +1,8 @@
 [
   {
     "id": 1,
-    "name": "LandBank"
-  },
-  {
-    "id": 2,
-    "name": "BDO"
-  },
-  {
-    "id": 3,
-    "name": "ChinaBank"
-  },
-  {
-    "id": 4,
-    "name": "BPI"
-  },
-  {
-    "id": 6,
-    "name": "Security Bank"
-  },
-  {
-    "id": 7,
-    "name": "American Bank"
+    "username": "elf",
+    "password": "123",
+    "name": "ElfBank"
   }
 ]

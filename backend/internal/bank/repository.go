@@ -84,12 +84,12 @@ func (r *Repository) saveData() error {
 }
 
 // Create adds a new bank to the repository
-func (r *Repository) Create(name string) (*Bank, error) {
+func (r *Repository) Create(username, password, name string) (*Bank, error) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
 	// Create new bank
-	bank := NewBank(r.nextID, name)
+	bank := NewBank(r.nextID, username, password, name)
 	r.banks = append(r.banks, bank)
 	r.nextID++
 
@@ -143,13 +143,15 @@ func (r *Repository) GetAll() []*Bank {
 }
 
 // Update modifies an existing bank
-func (r *Repository) Update(id int64, name string) (*Bank, error) {
+func (r *Repository) Update(id int64, username, password, name string) (*Bank, error) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
 	// Find and update bank
 	for _, bank := range r.banks {
 		if bank.ID == id {
+			bank.Username = username
+			bank.Password = password
 			bank.Name = name
 
 			// Save updated data
