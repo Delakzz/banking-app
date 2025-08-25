@@ -18,7 +18,7 @@ func NewService(repo *Repository) *Service {
 }
 
 // CreateBank creates a new bank with validation
-func (s *Service) CreateBank(name string) (*Bank, error) {
+func (s *Service) CreateBank(username, password, name string) (*Bank, error) {
 	// Validate input
 	if err := s.validateBankInput(name); err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (s *Service) CreateBank(name string) (*Bank, error) {
 	}
 
 	// Create bank through repository
-	bank, err = s.repo.Create(name)
+	bank, err = s.repo.Create(username, password, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create bank: %w", err)
 	}
@@ -59,7 +59,7 @@ func (s *Service) GetAllBanks() []*Bank {
 }
 
 // UpdateBank updates an existing bank
-func (s *Service) UpdateBank(id int64, name string) (*Bank, error) {
+func (s *Service) UpdateBank(id int64, username, password, name string) (*Bank, error) {
 	if id <= 0 {
 		return nil, fmt.Errorf("invalid bank ID: %d", id)
 	}
@@ -70,7 +70,7 @@ func (s *Service) UpdateBank(id int64, name string) (*Bank, error) {
 	}
 
 	// Update bank through repository
-	bank, err := s.repo.Update(id, name)
+	bank, err := s.repo.Update(id, username, password, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update bank: %w", err)
 	}
