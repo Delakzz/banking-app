@@ -1,10 +1,8 @@
 package main
 
 import (
-	"banking-app/backend/internal/bank"
-	"bufio"
+	"banking-app/backend/internal/user"
 	"fmt"
-	"os"
 )
 
 // Database Structure:
@@ -25,78 +23,117 @@ import (
 // 	fmt.Println("==========================")
 // }
 
-func showMenu() {
-	fmt.Println("Welcome to Banking App!")
-	fmt.Println("==========================")
-	fmt.Println()
-	fmt.Println("1. Create Bank")
-	fmt.Println("2. Update Bank")
-	fmt.Println("3. Delete Bank")
-	fmt.Println("4. Get all Banks")
-	fmt.Println()
-	fmt.Println("==========================")
-}
+// func showMenu() {
+// 	fmt.Println("Welcome to Banking App!")
+// 	fmt.Println("==========================")
+// 	fmt.Println()
+// 	fmt.Println("1. Create Bank")
+// 	fmt.Println("2. Update Bank")
+// 	fmt.Println("3. Delete Bank")
+// 	fmt.Println("4. Get all Banks")
+// 	fmt.Println()
+// 	fmt.Println("==========================")
+// }
+
+// func main() {
+// 	dataDir := "../../db"
+// 	bankRepo := bank.NewRepository(dataDir)
+
+// 	bankService := bank.NewService(bankRepo)
+// 	bankHandler := bank.NewHandler(bankService)
+
+// 	scanner := bufio.NewScanner(os.Stdin)
+
+// 	for {
+// 		showMenu()
+// 		fmt.Print("\nChoice: ")
+// 		scanner.Scan()
+// 		choice := scanner.Text()
+
+// 		switch choice {
+// 		case "0":
+// 			fmt.Println("Exiting the application. Goodbye!")
+// 			return
+// 		case "1":
+// 			fmt.Print("Enter bank username: ")
+// 			scanner.Scan()
+// 			bankUsername := scanner.Text()
+// 			fmt.Print("Enter bank password: ")
+// 			scanner.Scan()
+// 			bankPassword := scanner.Text()
+// 			fmt.Print("Enter bank name: ")
+// 			scanner.Scan()
+// 			bankName := scanner.Text()
+// 			bankHandler.HandleCreate(bankUsername, bankPassword, bankName)
+// 		case "2":
+// 			bankHandler.HandleList()
+// 			fmt.Print("\nEnter Bank ID to update: ")
+// 			scanner.Scan()
+// 			bankID := scanner.Text()
+// 			fmt.Println("Just hit enter if you do not wish to update that variable.")
+// 			fmt.Print("Enter new username: ")
+// 			scanner.Scan()
+// 			newUsername := scanner.Text()
+// 			fmt.Print("Enter new password: ")
+// 			scanner.Scan()
+// 			newPassword := scanner.Text()
+// 			fmt.Print("Enter new name: ")
+// 			scanner.Scan()
+// 			newName := scanner.Text()
+
+// 			bankHandler.HandleUpdate(bankID, newUsername, newPassword, newName)
+
+// 		case "3":
+// 			bankHandler.HandleList()
+// 			fmt.Print("\nEnter Bank ID to delete: ")
+// 			scanner.Scan()
+// 			bankID := scanner.Text()
+// 			bankHandler.HandleDelete(bankID)
+// 		case "4":
+// 			bankHandler.HandleList()
+// 			fmt.Print("\nPress enter to continue ")
+// 			scanner.Scan()
+// 		default:
+// 			fmt.Println("Whyyy???")
+// 		}
+// 	}
+// }
 
 func main() {
-	dataDir := "../../db"
-	bankRepo := bank.NewRepository(dataDir)
+	userRepo, err := user.NewRepository("../../db/database.json")
+	if err != nil {
+		panic(err)
+	}
 
-	bankService := bank.NewService(bankRepo)
-	bankHandler := bank.NewHandler(bankService)
-
-	scanner := bufio.NewScanner(os.Stdin)
+	userService := user.NewService(userRepo)
+	userHandler := user.NewHandler(userService)
 
 	for {
-		showMenu()
-		fmt.Print("\nChoice: ")
-		scanner.Scan()
-		choice := scanner.Text()
+		fmt.Println("\n1. Register")
+		fmt.Println("2. Login")
+		fmt.Println("3. Exit")
+
+		var choice int
+		fmt.Print("Choose: ")
+		fmt.Scan(&choice)
 
 		switch choice {
-		case "0":
-			fmt.Println("Exiting the application. Goodbye!")
+		case 1:
+			userHandler.Register()
+		case 2:
+			u := userHandler.Login()
+			if u == nil {
+				fmt.Println("error login")
+			}
+			if u != nil {
+				if u.Role == user.RoleBank {
+					fmt.Println("➡️  Go to Bank Menu")
+				} else if u.Role == user.RoleCustomer {
+					fmt.Println("➡️  Go to Customer Menu")
+				}
+			}
+		case 3:
 			return
-		case "1":
-			fmt.Print("Enter bank username: ")
-			scanner.Scan()
-			bankUsername := scanner.Text()
-			fmt.Print("Enter bank password: ")
-			scanner.Scan()
-			bankPassword := scanner.Text()
-			fmt.Print("Enter bank name: ")
-			scanner.Scan()
-			bankName := scanner.Text()
-			bankHandler.HandleCreate(bankUsername, bankPassword, bankName)
-		case "2":
-			bankHandler.HandleList()
-			fmt.Print("\nEnter Bank ID to update: ")
-			scanner.Scan()
-			bankID := scanner.Text()
-			fmt.Println("Just hit enter if you do not wish to update that variable.")
-			fmt.Print("Enter new username: ")
-			scanner.Scan()
-			newUsername := scanner.Text()
-			fmt.Print("Enter new password: ")
-			scanner.Scan()
-			newPassword := scanner.Text()
-			fmt.Print("Enter new name: ")
-			scanner.Scan()
-			newName := scanner.Text()
-
-			bankHandler.HandleUpdate(bankID, newUsername, newPassword, newName)
-
-		case "3":
-			bankHandler.HandleList()
-			fmt.Print("\nEnter Bank ID to delete: ")
-			scanner.Scan()
-			bankID := scanner.Text()
-			bankHandler.HandleDelete(bankID)
-		case "4":
-			bankHandler.HandleList()
-			fmt.Print("\nPress enter to continue ")
-			scanner.Scan()
-		default:
-			fmt.Println("Whyyy???")
 		}
 	}
 }

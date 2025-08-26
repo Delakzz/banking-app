@@ -7,5 +7,13 @@
       "name": "JaoBank"
     }
   ],
-  "customers": null
+  "customers": null,
+  "users": [
+    {
+      "id": 1,
+      "username": "jao",
+      "password": "password",
+      "role": "customer"
+    }
+  ]
 }
