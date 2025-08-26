@@ -1,0 +1,30 @@
+{
+  "banks": [
+    {
+      "id": 1,
+      "userid": 2,
+      "name": "jaobank"
+    }
+  ],
+  "customers": [],
+  "users": [
+    {
+      "id": 2,
+      "password": "password",
+      "role": "bank",
+      "username": "jao"
+    },
+    {
+      "id": 3,
+      "password": "password",
+      "role": "bank",
+      "username": "elf"
+    },
+    {
+      "id": 4,
+      "password": "password",
+      "role": "bank",
+      "username": "jaoelf"
+    }
+  ]
+}
