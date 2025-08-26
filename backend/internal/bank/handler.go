@@ -1,8 +1,11 @@
 package bank
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 )
 
 type Handler struct {
@@ -15,8 +18,8 @@ func NewHandler(service *Service) *Handler {
 	}
 }
 
-func (h *Handler) HandleCreate(username, password, name string) {
-	bank, err := h.service.CreateBank(username, password, name)
+func (h *Handler) HandleCreate(userID int64, name string) {
+	bank, err := h.service.CreateBank(userID, name)
 	if err != nil {
 		fmt.Printf("Error creating bank: %v\n", err)
 		return
@@ -60,14 +63,14 @@ func (h *Handler) HandleList() {
 	}
 }
 
-func (h *Handler) HandleUpdate(idStr, username, password, name string) {
+func (h *Handler) HandleUpdate(idStr, name string) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		fmt.Printf("Invalid ID format: %s\n", idStr)
 		return
 	}
 
-	bank, err := h.service.UpdateBank(id, username, password, name)
+	bank, err := h.service.UpdateBank(id, name)
 	if err != nil {
 		fmt.Printf("Error updating bank: %v\n", err)
 		return
@@ -93,70 +96,83 @@ func (h *Handler) HandleDelete(idStr string) {
 	fmt.Printf("Bank with ID %d deleted successfully!\n", id)
 }
 
-func (h *Handler) HandleAddCustomer(bankIDStr, customerIDStr string) {
-	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
+func (h *Handler) NewBankLogin(userID int64) {
+	scanner := bufio.NewReader(os.Stdin)
+	bank, err := h.service.repo.GetBankByUserID(userID)
 	if err != nil {
-		fmt.Printf("Invalid bank ID format: %s\n", bankIDStr)
-		return
+		fmt.Print("Enter bank name: ")
+		bankName, _ := scanner.ReadString('\n')
+		bankName = strings.TrimSpace(bankName) // Trim whitespace and newlines
+		h.HandleCreate(userID, bankName)
+	} else {
+		fmt.Printf("Welcome back, %s!\n", bank.Name)
 	}
-
-	customerID, err := strconv.ParseInt(customerIDStr, 10, 64)
-	if err != nil {
-		fmt.Printf("Invalid customer ID format: %s\n", customerIDStr)
-		return
-	}
-
-	err = h.service.AddCustomer(bankID, customerID)
-	if err != nil {
-		fmt.Printf("Error adding customer to bank: %v\n", err)
-		return
-	}
-
-	fmt.Printf("Customer %d successfully added to bank %d\n", customerID, bankID)
 }
 
-func (h *Handler) HandleRemoveCustomer(bankIDStr, customerIDStr string) {
-	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
-	if err != nil {
-		fmt.Printf("Invalid bank ID format: %s\n", bankIDStr)
-		return
-	}
+// func (h *Handler) HandleAddCustomer(bankIDStr, customerIDStr string) {
+// 	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
+// 	if err != nil {
+// 		fmt.Printf("Invalid bank ID format: %s\n", bankIDStr)
+// 		return
+// 	}
 
-	customerID, err := strconv.ParseInt(customerIDStr, 10, 64)
-	if err != nil {
-		fmt.Printf("Invalid customer ID format: %s\n", customerIDStr)
-		return
-	}
+// 	customerID, err := strconv.ParseInt(customerIDStr, 10, 64)
+// 	if err != nil {
+// 		fmt.Printf("Invalid customer ID format: %s\n", customerIDStr)
+// 		return
+// 	}
 
-	err = h.service.RemoveCustomer(bankID, customerID)
-	if err != nil {
-		fmt.Printf("Error removing customer from bank: %v\n", err)
-		return
-	}
+// 	err = h.service.AddCustomer(bankID, customerID)
+// 	if err != nil {
+// 		fmt.Printf("Error adding customer to bank: %v\n", err)
+// 		return
+// 	}
 
-	fmt.Printf("Customer %d successfully removed from bank %d\n", customerID, bankID)
-}
+// 	fmt.Printf("Customer %d successfully added to bank %d\n", customerID, bankID)
+// }
 
-func (h *Handler) HandleGetCustomers(bankIDStr string) {
-	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
-	if err != nil {
-		fmt.Printf("Invalid bank ID format: %s\n", bankIDStr)
-		return
-	}
+// func (h *Handler) HandleRemoveCustomer(bankIDStr, customerIDStr string) {
+// 	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
+// 	if err != nil {
+// 		fmt.Printf("Invalid bank ID format: %s\n", bankIDStr)
+// 		return
+// 	}
 
-	customers, err := h.service.GetCustomers(bankID)
-	if err != nil {
-		fmt.Printf("Error getting bank customers: %v\n", err)
-		return
-	}
+// 	customerID, err := strconv.ParseInt(customerIDStr, 10, 64)
+// 	if err != nil {
+// 		fmt.Printf("Invalid customer ID format: %s\n", customerIDStr)
+// 		return
+// 	}
 
-	if len(customers) == 0 {
-		fmt.Printf("No customers found for bank %d\n", bankID)
-		return
-	}
+// 	err = h.service.RemoveCustomer(bankID, customerID)
+// 	if err != nil {
+// 		fmt.Printf("Error removing customer from bank: %v\n", err)
+// 		return
+// 	}
 
-	fmt.Printf("Customers for bank %d (Total: %d):\n", bankID, len(customers))
-	for i, customerID := range customers {
-		fmt.Printf("  %d. Customer ID: %d\n", i+1, customerID)
-	}
-}
+// 	fmt.Printf("Customer %d successfully removed from bank %d\n", customerID, bankID)
+// }
+
+// func (h *Handler) HandleGetCustomers(bankIDStr string) {
+// 	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
+// 	if err != nil {
+// 		fmt.Printf("Invalid bank ID format: %s\n", bankIDStr)
+// 		return
+// 	}
+
+// 	customers, err := h.service.GetCustomers(bankID)
+// 	if err != nil {
+// 		fmt.Printf("Error getting bank customers: %v\n", err)
+// 		return
+// 	}
+
+// 	if len(customers) == 0 {
+// 		fmt.Printf("No customers found for bank %d\n", bankID)
+// 		return
+// 	}
+
+// 	fmt.Printf("Customers for bank %d (Total: %d):\n", bankID, len(customers))
+// 	for i, customerID := range customers {
+// 		fmt.Printf("  %d. Customer ID: %d\n", i+1, customerID)
+// 	}
+// }

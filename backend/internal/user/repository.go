@@ -55,6 +55,14 @@ func (r *Repository) load() error {
 		r.data.Users = []User{}
 	}
 
+	// Set nextID based on the highest existing user ID
+	r.nextID = 1
+	for _, user := range r.data.Users {
+		if user.ID >= r.nextID {
+			r.nextID = user.ID + 1
+		}
+	}
+
 	return nil
 }
 

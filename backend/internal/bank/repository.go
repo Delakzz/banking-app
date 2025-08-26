@@ -4,10 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 )
+
+// UnifiedDatabase represents the structure of database.json
+type UnifiedDatabase struct {
+	Banks     []*Bank `json:"banks"`
+	Customers []interface{} `json:"customers"`
+	Users     []interface{} `json:"users"`
+}
 
 type Repository struct {
 	filePath string
@@ -17,14 +23,8 @@ type Repository struct {
 }
 
 func NewRepository(dataDir string) *Repository {
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		panic(fmt.Sprintf("failed to create data directory: %v", err))
-	}
-
-	filePath := filepath.Join(dataDir, "database.json")
-
 	repo := &Repository{
-		filePath: filePath,
+		filePath: dataDir,
 		nextID:   1,
 		banks:    []*Bank{},
 	}
@@ -45,40 +45,90 @@ func (r *Repository) loadDB() {
 		return
 	}
 
-	var banks []*Bank
-	if err := json.Unmarshal(data, &banks); err != nil {
-		fmt.Printf("Warning: failed to parse banks file: %v\n", err)
+	// Try to parse as unified database first
+	var unifiedDB UnifiedDatabase
+	if err := json.Unmarshal(data, &unifiedDB); err == nil {
+		// Successfully parsed as unified database
+		if unifiedDB.Banks != nil {
+			r.banks = unifiedDB.Banks
+			// find the highest ID to set nextID correctly
+			for _, bank := range r.banks {
+				if bank.ID >= r.nextID {
+					r.nextID = bank.ID + 1
+				}
+			}
+		}
 		return
 	}
 
+	// Fallback: try to parse as legacy bank array
+	var banks []*Bank
+	if err := json.Unmarshal(data, &banks); err != nil {
+		fmt.Printf("Warning: failed to parse banks file: %v\n", err)
+		// Initialize with empty banks array if parsing fails completely
+		r.banks = []*Bank{}
+		return
+	}
+
+	r.banks = banks
 	// find the highest ID to set nextID correctly
-	for _, bank := range banks {
+	for _, bank := range r.banks {
 		if bank.ID >= r.nextID {
 			r.nextID = bank.ID + 1
 		}
 	}
-
-	r.banks = banks
 }
 
 func (r *Repository) saveData() error {
-	data, err := json.MarshalIndent(r.banks, "", "  ")
+	// Load the existing unified database
+	var unifiedDB UnifiedDatabase
+	
+	if _, err := os.Stat(r.filePath); err == nil {
+		data, err := os.ReadFile(r.filePath)
+		if err == nil {
+			if err := json.Unmarshal(data, &unifiedDB); err != nil {
+				// If parsing fails, initialize with empty structure
+				unifiedDB = UnifiedDatabase{
+					Banks:     []*Bank{},
+					Customers: []interface{}{},
+					Users:     []interface{}{},
+				}
+			}
+		}
+	}
+	
+	// Ensure all fields are initialized
+	if unifiedDB.Banks == nil {
+		unifiedDB.Banks = []*Bank{}
+	}
+	if unifiedDB.Customers == nil {
+		unifiedDB.Customers = []interface{}{}
+	}
+	if unifiedDB.Users == nil {
+		unifiedDB.Users = []interface{}{}
+	}
+	
+	// Update the banks section
+	unifiedDB.Banks = r.banks
+	
+	// Marshal the entire unified database
+	data, err := json.MarshalIndent(unifiedDB, "", "  ")
 	if err != nil {
-		return fmt.Errorf("failed to marshal banks data: %w", err)
+		return fmt.Errorf("failed to marshal unified database: %w", err)
 	}
 
 	if err := os.WriteFile(r.filePath, data, 0644); err != nil {
-		return fmt.Errorf("failed to write banks file: %w", err)
+		return fmt.Errorf("failed to write unified database: %w", err)
 	}
 
 	return nil
 }
 
-func (r *Repository) Create(username, password, name string) (*Bank, error) {
+func (r *Repository) Create(userID int64, name string) (*Bank, error) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
-	bank := NewBank(r.nextID, username, password, name)
+	bank := NewBank(r.nextID, userID, name)
 	r.banks = append(r.banks, bank)
 	r.nextID++
 
@@ -100,6 +150,18 @@ func (r *Repository) GetByID(id int64) (*Bank, error) {
 	}
 
 	return nil, fmt.Errorf("bank with ID %d not found", id)
+}
+
+func (r *Repository) GetBankByUserID(id int64) (*Bank, error) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
+
+	for _, bank := range r.banks {
+		if bank.UserID == id {
+			return bank, nil
+		}
+	}
+	return nil, fmt.Errorf("bank with User ID %d not found", id)
 }
 
 func (r *Repository) GetByName(name string) (*Bank, error) {
@@ -128,20 +190,13 @@ func (r *Repository) GetAll() []*Bank {
 	return banks
 }
 
-func (r *Repository) Update(id int64, username, password, name string) (*Bank, error) {
+func (r *Repository) Update(id int64, name string) (*Bank, error) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
 	// Find and update bank
 	for _, bank := range r.banks {
 		if bank.ID == id {
-			if username != "" {
-				bank.Username = username
-			}
-
-			if password != "" {
-				bank.Password = password
-			}
 
 			if name != "" {
 				bank.Name = name
@@ -181,89 +236,89 @@ func (r *Repository) Delete(id int64) error {
 	return fmt.Errorf("bank with ID %d not found", id)
 }
 
-func (r *Repository) AddCustomer(bankID, customerID int64) error {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+// func (r *Repository) AddCustomer(bankID, customerID int64) error {
+// 	r.mutex.Lock()
+// 	defer r.mutex.Unlock()
 
-	// Find bank and add customer
-	for _, bank := range r.banks {
-		if bank.ID == bankID {
-			// Check if customer already exists
-			for _, existingCustomerID := range bank.Customers {
-				if existingCustomerID == customerID {
-					return fmt.Errorf("customer %d already exists in bank %d", customerID, bankID)
-				}
-			}
+// 	// Find bank and add customer
+// 	for _, bank := range r.banks {
+// 		if bank.ID == bankID {
+// 			// Check if customer already exists
+// 			for _, existingCustomerID := range bank.Customers {
+// 				if existingCustomerID == customerID {
+// 					return fmt.Errorf("customer %d already exists in bank %d", customerID, bankID)
+// 				}
+// 			}
 
-			bank.Customers = append(bank.Customers, customerID)
+// 			bank.Customers = append(bank.Customers, customerID)
 
-			// Save updated data
-			if err := r.saveData(); err != nil {
-				return fmt.Errorf("failed to save bank data: %w", err)
-			}
+// 			// Save updated data
+// 			if err := r.saveData(); err != nil {
+// 				return fmt.Errorf("failed to save bank data: %w", err)
+// 			}
 
-			return nil
-		}
-	}
+// 			return nil
+// 		}
+// 	}
 
-	return fmt.Errorf("bank with ID %d not found", bankID)
-}
+// 	return fmt.Errorf("bank with ID %d not found", bankID)
+// }
 
-func (r *Repository) RemoveCustomer(bankID, customerID int64) error {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
+// func (r *Repository) RemoveCustomer(bankID, customerID int64) error {
+// 	r.mutex.Lock()
+// 	defer r.mutex.Unlock()
 
-	// Find bank and remove customer
-	for _, bank := range r.banks {
-		if bank.ID == bankID {
-			// Find and remove customer
-			for i, existingCustomerID := range bank.Customers {
-				if existingCustomerID == customerID {
-					// Remove customer by slicing
-					bank.Customers = append(bank.Customers[:i], bank.Customers[i+1:]...)
+// 	// Find bank and remove customer
+// 	for _, bank := range r.banks {
+// 		if bank.ID == bankID {
+// 			// Find and remove customer
+// 			for i, existingCustomerID := range bank.Customers {
+// 				if existingCustomerID == customerID {
+// 					// Remove customer by slicing
+// 					bank.Customers = append(bank.Customers[:i], bank.Customers[i+1:]...)
 
-					// Save updated data
-					if err := r.saveData(); err != nil {
-						return fmt.Errorf("failed to save bank data: %w", err)
-					}
+// 					// Save updated data
+// 					if err := r.saveData(); err != nil {
+// 						return fmt.Errorf("failed to save bank data: %w", err)
+// 					}
 
-					return nil
-				}
-			}
+// 					return nil
+// 				}
+// 			}
 
-			return fmt.Errorf("customer %d not found in bank %d", customerID, bankID)
-		}
-	}
+// 			return fmt.Errorf("customer %d not found in bank %d", customerID, bankID)
+// 		}
+// 	}
 
-	return fmt.Errorf("bank with ID %d not found", bankID)
-}
+// 	return fmt.Errorf("bank with ID %d not found", bankID)
+// }
 
-func (r *Repository) GetCustomers(bankID int64) ([]int64, error) {
-	r.mutex.RLock()
-	defer r.mutex.RUnlock()
+// func (r *Repository) GetCustomers(bankID int64) ([]int64, error) {
+// 	r.mutex.RLock()
+// 	defer r.mutex.RUnlock()
 
-	for _, bank := range r.banks {
-		if bank.ID == bankID {
-			// Return a copy to avoid external modification
-			customers := make([]int64, len(bank.Customers))
-			copy(customers, bank.Customers)
+// 	for _, bank := range r.banks {
+// 		if bank.ID == bankID {
+// 			// Return a copy to avoid external modification
+// 			customers := make([]int64, len(bank.Customers))
+// 			copy(customers, bank.Customers)
 
-			return customers, nil
-		}
-	}
+// 			return customers, nil
+// 		}
+// 	}
 
-	return nil, fmt.Errorf("bank with ID %d not found", bankID)
-}
+// 	return nil, fmt.Errorf("bank with ID %d not found", bankID)
+// }
 
-func (r *Repository) GetCustomerCount(bankID int64) (int, error) {
-	r.mutex.RLock()
-	defer r.mutex.RUnlock()
+// func (r *Repository) GetCustomerCount(bankID int64) (int, error) {
+// 	r.mutex.RLock()
+// 	defer r.mutex.RUnlock()
 
-	bank, err := r.GetByID(bankID)
+// 	bank, err := r.GetByID(bankID)
 
-	if err != nil {
-		return 0, fmt.Errorf("bank with ID %d not found", bankID)
-	}
+// 	if err != nil {
+// 		return 0, fmt.Errorf("bank with ID %d not found", bankID)
+// 	}
 
-	return len(bank.Customers), nil
-}
+// 	return len(bank.Customers), nil
+// }

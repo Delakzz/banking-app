@@ -2,18 +2,29 @@
   "banks": [
     {
       "id": 1,
-      "username": "jao",
-      "password": "password",
-      "name": "JaoBank"
+      "userid": 2,
+      "name": "jaobank"
     }
   ],
-  "customers": null,
+  "customers": [],
   "users": [
     {
-      "id": 1,
-      "username": "jao",
+      "id": 2,
       "password": "password",
-      "role": "customer"
+      "role": "bank",
+      "username": "jao"
+    },
+    {
+      "id": 3,
+      "password": "password",
+      "role": "bank",
+      "username": "elf"
+    },
+    {
+      "id": 4,
+      "password": "password",
+      "role": "bank",
+      "username": "jaoelf"
     }
   ]
 }

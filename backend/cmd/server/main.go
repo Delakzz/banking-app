@@ -1,8 +1,12 @@
 package main
 
 import (
+	"banking-app/backend/internal/bank"
 	"banking-app/backend/internal/user"
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 )
 
 // Database Structure:
@@ -99,41 +103,70 @@ import (
 // 	}
 // }
 
+func showLoginMenu() {
+	fmt.Println("\n======= Login Menu =======")
+	fmt.Println()
+	fmt.Println("1. Login")
+	fmt.Println("2. Register")
+	fmt.Println()
+	fmt.Println("==========================")
+}
+
 func main() {
-	userRepo, err := user.NewRepository("../../db/database.json")
+	dataDir := "../../db/database.json"
+	userRepo, err := user.NewRepository(dataDir)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("failed to load database: %w", err))
 	}
 
 	userService := user.NewService(userRepo)
 	userHandler := user.NewHandler(userService)
 
-	for {
-		fmt.Println("\n1. Register")
-		fmt.Println("2. Login")
-		fmt.Println("3. Exit")
+	bankRepo := bank.NewRepository(dataDir)
 
-		var choice int
+	bankService := bank.NewService(bankRepo)
+	bankHandler := bank.NewHandler(bankService)
+
+	scanner := bufio.NewReader(os.Stdin)
+
+	fmt.Println("Welcome to Banking App!")
+
+	for {
+		showLoginMenu()
+
 		fmt.Print("Choose: ")
-		fmt.Scan(&choice)
+		choice, _ := scanner.ReadString('\n')
+		choice = strings.TrimSpace(choice) // important: remove \n
 
 		switch choice {
-		case 1:
-			userHandler.Register()
-		case 2:
+		case "0":
+			fmt.Println("\n👋 Exiting the application. Goodbye!")
+			return
+
+		case "1":
+			fmt.Println("\n🔓 Login")
 			u := userHandler.Login()
 			if u == nil {
-				fmt.Println("error login")
+				fmt.Println("❌ Login failed. Please try again.")
+				continue
 			}
-			if u != nil {
-				if u.Role == user.RoleBank {
-					fmt.Println("➡️  Go to Bank Menu")
-				} else if u.Role == user.RoleCustomer {
-					fmt.Println("➡️  Go to Customer Menu")
-				}
+
+			switch u.Role {
+			case user.RoleBank:
+				bankHandler.NewBankLogin(u.ID)
+			case user.RoleCustomer:
+				fmt.Println("🙋 You are logged in as a Customer!")
+				// TODO: call customer menu handler here
+			default:
+				fmt.Println("⚠️ Unknown role. Please contact admin.")
 			}
-		case 3:
-			return
+
+		case "2":
+			fmt.Println("\n🔑 Register New User")
+			userHandler.Register()
+
+		default:
+			fmt.Println("❌ Invalid choice. Please select a valid option.")
 		}
 	}
 }

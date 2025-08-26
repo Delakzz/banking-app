@@ -1,19 +1,15 @@
 package bank
 
 type Bank struct {
-	ID        int64   `json:"id"`
-	Username  string  `json:"username,omitempty"`
-	Password  string  `json:"password,omitempty"`
-	Name      string  `json:"name,omitempty"`
-	Customers []int64 `json:"customers,omitempty"`
+	ID     int64  `json:"id"`
+	UserID int64  `json:"userid"`
+	Name   string `json:"name,omitempty"`
 }
 
-func NewBank(id int64, username, password, name string) *Bank {
+func NewBank(id, userID int64, name string) *Bank {
 	return &Bank{
-		ID:        id,
-		Username:  username,
-		Password:  password,
-		Name:      name,
-		Customers: []int64{},
+		ID:     id,
+		UserID: userID,
+		Name:   name,
 	}
 }
