@@ -5,19 +5,16 @@ import (
 	"strconv"
 )
 
-// Handler provides CLI interface functions for bank operations
 type Handler struct {
 	service *Service
 }
 
-// NewHandler creates a new bank handler
 func NewHandler(service *Service) *Handler {
 	return &Handler{
 		service: service,
 	}
 }
 
-// HandleCreate processes bank creation from CLI input
 func (h *Handler) HandleCreate(username, password, name string) {
 	bank, err := h.service.CreateBank(username, password, name)
 	if err != nil {
@@ -29,7 +26,6 @@ func (h *Handler) HandleCreate(username, password, name string) {
 	fmt.Printf("ID: %d, Name: %s\n", bank.ID, bank.Name)
 }
 
-// HandleGet processes bank retrieval by ID from CLI input
 func (h *Handler) HandleGet(idStr string) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -47,7 +43,6 @@ func (h *Handler) HandleGet(idStr string) {
 	fmt.Printf("ID: %d, Name: %s\n", bank.ID, bank.Name)
 }
 
-// HandleList displays all banks
 func (h *Handler) HandleList() {
 	banks := h.service.GetAllBanks()
 
@@ -61,12 +56,10 @@ func (h *Handler) HandleList() {
 	fmt.Println("--\t---------")
 
 	for _, bank := range banks {
-		// customerCount := len(bank.Customers)
 		fmt.Printf("%d\t%s\n", bank.ID, bank.Name)
 	}
 }
 
-// HandleUpdate processes bank updates from CLI input
 func (h *Handler) HandleUpdate(idStr, username, password, name string) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -84,7 +77,6 @@ func (h *Handler) HandleUpdate(idStr, username, password, name string) {
 	fmt.Printf("ID: %d, Name: %s\n", bank.ID, bank.Name)
 }
 
-// HandleDelete processes bank deletion from CLI input
 func (h *Handler) HandleDelete(idStr string) {
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -101,22 +93,6 @@ func (h *Handler) HandleDelete(idStr string) {
 	fmt.Printf("Bank with ID %d deleted successfully!\n", id)
 }
 
-// ShowHelp displays available commands
-// func (h *Handler) ShowHelp() {
-// 	fmt.Println("Bank Management Commands:")
-// 	fmt.Println("  create <name>            - Create a new bank")
-// 	fmt.Println("  get <id>                 - Get bank by ID")
-// 	fmt.Println("  list                     - List all banks")
-// 	fmt.Println("  update <id> <name>       - Update bank")
-// 	fmt.Println("  delete <id>              - Delete bank")
-// 	fmt.Println("  add-customer <bank_id> <customer_id> - Add customer to bank")
-// 	fmt.Println("  remove-customer <bank_id> <customer_id> - Remove customer from bank")
-// 	fmt.Println("  get-customers <bank_id>  - List customers for a bank")
-// 	fmt.Println("  help                     - Show this help")
-// 	fmt.Println("  exit                     - Exit the application")
-// }
-
-// HandleAddCustomer processes adding a customer to a bank
 func (h *Handler) HandleAddCustomer(bankIDStr, customerIDStr string) {
 	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
 	if err != nil {
@@ -139,7 +115,6 @@ func (h *Handler) HandleAddCustomer(bankIDStr, customerIDStr string) {
 	fmt.Printf("Customer %d successfully added to bank %d\n", customerID, bankID)
 }
 
-// HandleRemoveCustomer processes removing a customer from a bank
 func (h *Handler) HandleRemoveCustomer(bankIDStr, customerIDStr string) {
 	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
 	if err != nil {
@@ -162,7 +137,6 @@ func (h *Handler) HandleRemoveCustomer(bankIDStr, customerIDStr string) {
 	fmt.Printf("Customer %d successfully removed from bank %d\n", customerID, bankID)
 }
 
-// HandleGetCustomers displays all customers for a specific bank
 func (h *Handler) HandleGetCustomers(bankIDStr string) {
 	bankID, err := strconv.ParseInt(bankIDStr, 10, 64)
 	if err != nil {
@@ -181,7 +155,7 @@ func (h *Handler) HandleGetCustomers(bankIDStr string) {
 		return
 	}
 
-	fmt.Printf("Customers for bank %d:\n", bankID)
+	fmt.Printf("Customers for bank %d (Total: %d):\n", bankID, len(customers))
 	for i, customerID := range customers {
 		fmt.Printf("  %d. Customer ID: %d\n", i+1, customerID)
 	}

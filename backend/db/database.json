@@ -1,0 +1,11 @@
+{
+  "banks": [
+    {
+      "id": 1,
+      "username": "jao",
+      "password": "password",
+      "name": "JaoBank"
+    }
+  ],
+  "customers": null
+}

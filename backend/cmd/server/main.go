@@ -7,6 +7,13 @@ import (
 	"os"
 )
 
+// Database Structure:
+// - Both banks and customers are stored in db/database.json
+// - Banks collection: stores bank information with customer IDs
+// - Customers collection: stores customer information with bank references
+// - Banks can have multiple customers (stored as customer IDs)
+// - Customers can only belong to one bank (stored as bank ID)
+
 // func showUpdateMenu() {
 // 	fmt.Println("What would you like to update?")
 // 	fmt.Println("==========================")
@@ -31,11 +38,9 @@ func showMenu() {
 }
 
 func main() {
-	// Initialize repository with data directory
 	dataDir := "../../db"
 	bankRepo := bank.NewRepository(dataDir)
 
-	// Initialize service and handler
 	bankService := bank.NewService(bankRepo)
 	bankHandler := bank.NewHandler(bankService)
 
